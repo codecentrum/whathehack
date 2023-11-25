@@ -1,0 +1,36 @@
+---
+# Setup server
+# 1. Create Jarvis user
+# 2. Remove root login
+# 3. This script must be executed in the first time
+
+- hosts: all
+  remote_user: jarvis
+  gather_facts: no
+  become: yes
+  vars:
+    ansible_become_pass: "{{ jarvis_become_pass }}"
+  tasks:
+  - name: Get authorized_keys files
+    command: ls "./credentials/ssh/jarvis"
+    become: no
+    delegate_to: 127.0.0.1
+    register: ssh_files
+
+  - block:
+    - name: Create .ssh directory
+      file:
+        path: /home/jarvis/.ssh
+        state: directory
+        owner: "jarvis"
+        group: "jarvis"
+        mode: 0700
+
+    - name: Copy authorized_keys files
+      copy:
+        src: "./credentials/ssh/jarvis/{{ item }}"
+        dest: /home/jarvis/.ssh/{{ item }}
+        owner: "jarvis"
+        group: "jarvis"
+        mode: 0600
+      with_items: "{{ ssh_files.stdout_lines }}"

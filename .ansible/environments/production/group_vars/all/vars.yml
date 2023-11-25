@@ -1,0 +1,8 @@
+---
+production: true
+
+jarvis_become_pass: "{{ vault_jarvis_become_pass }}"
+encrypted_root_password: "{{ vault_encrypted_root_password }}"
+encrypted_jarvis_password: "{{ vault_encrypted_jarvis_password }}"
+
+ruby_version: 3.0.5

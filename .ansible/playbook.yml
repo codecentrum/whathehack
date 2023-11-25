@@ -1,0 +1,20 @@
+---
+
+# Will setup all server based on environments
+- name: Basic hardening server
+  hosts: all
+  remote_user: jarvis
+  become: true
+  vars:
+    ansible_become_pass: "{{ jarvis_become_pass }}"
+  roles:
+    - cron
+    - time
+    - git
+    - ssh
+    - ufw
+    - purge_services
+    - nginx
+    - sudoers
+    - nodejs
+    - yarn

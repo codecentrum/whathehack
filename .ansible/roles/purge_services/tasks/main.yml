@@ -1,0 +1,6 @@
+---
+
+- name: Remove postfix
+  apt:
+    name: postfix
+    state: absent

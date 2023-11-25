@@ -1,0 +1,5 @@
+- name: Grant app user sudo rights to manage app
+  template:
+    src: sudoers.j2
+    dest: /etc/sudoers.d/jarvis
+    validate: /usr/sbin/visudo -c -f %s

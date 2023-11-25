@@ -1,0 +1,6 @@
+jarvis ALL=(ALL) ALL
+jarvis ALL= NOPASSWD: /usr/bin/systemctl * puma-app.service
+
+Defaults: jarvis !requiretty
+Defaults: jarvis env_reset
+Defaults: jarvis env_keep += "RAILS_ENV"

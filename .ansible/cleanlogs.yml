@@ -1,0 +1,17 @@
+---
+#
+# Playbook to clean log files on controller nodes
+#
+- hosts: all
+  remote_user: jarvis
+  become: yes
+  vars:
+    ansible_become_pass: "{{ jarvis_become_pass }}"
+  tasks:
+    - name: Clean Logs
+      shell: for i in $(ls {{ item }}); do  echo "" > $i; done
+      with_items:
+        - /var/log/auth.log.*
+        - /var/log/alternatives.log.*
+        - /var/log/dpkg.log.*
+        - /var/log/ubuntu-advantage.log.*

@@ -1,0 +1,78 @@
+---
+# Setup server
+# 1. Create Jarvis user
+# 2. Remove root login
+# 3. This script must be executed in the first time
+
+- hosts: all
+  remote_user: root
+  gather_facts: no
+  tasks:
+  - name: Check root login
+    command: ssh -q -o BatchMode=yes -o ConnectTimeout=3 root@{{public_ip}} "echo OK"
+    delegate_to: 127.0.0.1
+    changed_when: false
+    failed_when: false
+    # register: check_root_login
+
+  # - name: Check for python
+  #   raw: test -e /usr/bin/python3
+  #   changed_when: false
+  #   failed_when: false
+  #   register: check_python
+
+  - name: Install python
+    raw: test -e /usr/bin/apt && (apt -y update && apt install -y python3)
+    failed_when: false
+    # when: check_python.rc != 0
+
+  - block:
+    - name: Create Jarvis user
+      user:
+        name: jarvis
+        comment: "Jarvis user"
+        password: "{{ encrypted_jarvis_password }}"
+        update_password: always
+        shell: /bin/bash
+
+    - name: Allow sudo for jarvis
+      copy:
+        content: jarvis ALL=(ALL) ALL
+        dest: /etc/sudoers.d/jarvis
+        mode: 0600
+
+    - name: Get authorized_keys files
+      command: ls "./credentials/ssh/jarvis"
+      # changed_when: false
+      # failed_when: false
+      become: no
+      delegate_to: 127.0.0.1
+      register: ssh_files
+
+    - block:
+      - name: Create .ssh directory
+        file:
+          path: /home/jarvis/.ssh
+          state: directory
+          owner: "jarvis"
+          group: "jarvis"
+          mode: 0700
+
+      - name: Copy authorized_keys files
+        copy:
+          src: "./credentials/ssh/jarvis/{{ item }}"
+          dest: /home/jarvis/.ssh/{{ item }}
+          owner: "jarvis"
+          group: "jarvis"
+          mode: 0600
+        with_items: "{{ ssh_files.stdout_lines }}"
+
+      # when: ssh_files.rc == 0
+
+    # Remove root login for security
+    - name: Remove authorized keys from root
+      file:
+        path: /root/.ssh/authorized_keys
+        state: absent
+
+    # when: check_root_login.rc == 0
